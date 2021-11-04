@@ -1,0 +1,233 @@
+import '@progress/kendo-theme-default/dist/all.css'
+
+import { useState, useEffect } from "react";
+
+import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
+import { mapTree } from "@progress/kendo-react-treelist";
+import { clone } from '@progress/kendo-react-common';
+
+/**
+* Import a custom command cell responsible for rendering the Edit, Remove, Update and Cancel commands.
+*/
+import MyCommandCell from './components/CommandCell';
+
+import Axios from "axios";
+
+/**
+* Import the React.Context use to pass extra props to the custom cell.
+*/
+import CellContext from './context/cell-context';
+
+/**
+* Import a custom DropDownList cell for handling complex objects.
+*/
+import DropDownCell from './components/DropDownCell';
+
+function App() {
+  const [data, setData] = useState([]);
+  const [itemBeforeEdit, setItemBeforeEdit] = useState({})
+  const [dataState, setDataState] = useState({ take: 5, skip: 0, group: [] })
+  const [total, setTotal] = useState(0);
+
+
+  /**
+  * Request the data when the component mounts.
+  */
+  useEffect(() => {
+    Axios.get("http://localhost:4000/products", {
+      params: {
+        dataState: dataState
+      }
+    }).then((response) => {
+      let parsedDataNew = mapTree(response.data.data, 'items', (product) => {
+        product.FirstOrderedOn = product.FirstOrderedOn !== null ? new Date(product.FirstOrderedOn) : null;
+        return product
+      })
+      setTotal(response.data.total)
+      setData([...parsedDataNew]);
+    });
+  }, [])
+
+  /**
+  * Add a new empty item only to the local data.
+  */
+  const addRecord = () => {
+    let newRecord = { ProductID: undefined, FirstOrderedOn: null, Category: null, inEdit: true }
+    let newData = [...data];
+    newData.unshift(newRecord);
+    setData(newData)
+  }
+
+  /**
+  * Update the local data when the user edits a field.
+  */
+  const handleItemChange = (event) => {
+    let newData = mapTree(data, 'items', item => {
+      if (event.dataItem.ProductID === item.ProductID) {
+        item[event.field] = event.value;
+      }
+      return item;
+    })
+    setData(newData);
+  }
+
+  /**
+  * Put the row in edit mode.
+  */
+  const enterEdit = (dataItem) => {
+    let newData = mapTree(data, "items", (item) => {
+      dataItem.ProductID === item.ProductID ? item.inEdit = true : item.inEdit = false;
+      return item;
+    });
+
+    setItemBeforeEdit(clone(dataItem));
+    setData(newData);
+  }
+
+  /**
+  * Make a request to the server to delete a specific item.
+  */
+  const remove = (dataItem) => {
+    Axios.delete(`http://localhost:4000/delete/${dataItem.ProductID}`, { data : {dataState: dataState}}).then(
+      (response) => {
+        let newData = mapTree(response.data.data,'items', item => {
+          item.FirstOrderedOn = new Date(item.FirstOrderedOn);
+          return item;
+        })
+        setData([...newData]);
+        setTotal(response.data.total)
+      }
+    );
+  }
+
+  /**
+  * Make a request to the server to create a new item.
+  */
+  const add = (dataItem) => {
+    Axios.post("http://localhost:4000/create", { item: dataItem, dataState: dataState }).then((response) => {
+      let newData = mapTree(response.data.data,'items', item => {
+        item.FirstOrderedOn = new Date(item.FirstOrderedOn);
+        return item;
+      })
+      setData(newData);
+      setTotal(response.data.total)
+    });
+  }
+
+  /**
+  * Remove a new item that has not been still saved on the server.
+  */
+  const discard = () => {
+    let hasGroup = dataState.group.length > 0 ? true : false
+    let newData = []
+    hasGroup ? newData = data.filter(item => item.value !== undefined) : newData = data.filter(item => item.ProductID !== undefined )
+    setData(newData);
+  }
+
+  /**
+  * Make a request to the server to update a specific item.
+  */
+  const update = (dataItem) => {
+    Axios.put("http://localhost:4000/update", { item: dataItem, dataState: dataState }).then(
+      (response) => {
+        let newData = mapTree(response.data.data,'items', item => {
+          item.FirstOrderedOn = new Date(item.FirstOrderedOn);
+          return item;
+        })
+        setData(newData);
+      }
+    );
+  }
+
+  /**
+  * Cancel the changes made to an item before they were saved on the server.
+  */
+  const cancel = () => {
+    let newData = mapTree(data, 'items', item => {
+      if (item.ProductID === itemBeforeEdit.ProductID) {
+        item = itemBeforeEdit;
+        item.inEdit = false;
+      }
+      return item;
+    })
+    setData(newData);
+  }
+
+  /**
+  * Make request to the server for data operations like paging, sorting, filtering and grouping.
+  */
+  const handleDataStateChange = (event) => {
+    Axios.get("http://localhost:4000/products", {
+      params: {
+        dataState: event.dataState
+      }
+    }).then((response) => {
+      let parseData = mapTree(response.data.data,'items', product => {
+        product.FirstOrderedOn = product.FirstOrderedOn !== null ? new Date(product.FirstOrderedOn) : null;
+        return product
+      })
+      setDataState(event.dataState)
+      setTotal(response.data.total)
+      setData([...parseData]);
+    });
+
+  }
+  return (
+    <div className="App">
+      <CellContext.Provider
+        value={{
+          enterEdit: enterEdit,
+          remove: remove,
+          add: add,
+          discard: discard,
+          update: update,
+          cancel: cancel,
+          editField: 'inEdit'
+        }}
+      >
+        <Grid
+          style={{
+            height: "520px",
+          }}
+          data={data}
+          editField="inEdit"
+          onItemChange={handleItemChange}
+          onDataStateChange={handleDataStateChange}
+          {...dataState}
+          pageable
+          sortable
+          filterable
+          groupable
+          total={total}
+        >
+          <GridToolbar>
+            <div>
+              <button
+                title="Add new"
+                className="k-button k-primary"
+                onClick={addRecord}
+              >
+                Add new
+              </button>
+            </div>
+          </GridToolbar>
+          <GridColumn field="ProductID" title="Id" width="100px" editable={false} filterable={false} />
+          <GridColumn field="ProductName" title="Name" />
+          <GridColumn field="Category.CategoryName" title="Category" cell={DropDownCell} />
+          <GridColumn field="FirstOrderedOn" title="First Ordered On" editor="date" filter='date' format={'{0:d}'} />
+          <GridColumn
+            field="UnitsInStock"
+            title="Units"
+            width="150px"
+            editor="numeric"
+            filter="numeric"
+          />
+          <GridColumn field="Discontinued" title="Discontinued" editor="boolean" filter="boolean" />
+          <GridColumn cell={MyCommandCell} width="200px" />
+        </Grid>
+      </CellContext.Provider>
+    </div>
+  );
+}
+
+export default App;
