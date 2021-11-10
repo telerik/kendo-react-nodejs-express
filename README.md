@@ -23,7 +23,11 @@ npm install
 ````
 node index.js
 ````
-4. Open a new terminal and to the client folder.
+4. Open a new terminal at the main folder and to the client folder.
+
+````
+cd client
+````
 
 5. Install the packages
 

@@ -16,7 +16,7 @@ import Axios from "axios";
 /**
 * Import the React.Context use to pass extra props to the custom cell.
 */
-import CellContext from './context/cell-context';
+import DataContext from './context/data-context';
 
 /**
 * Import a custom DropDownList cell for handling complex objects.
@@ -31,7 +31,7 @@ function App() {
 
 
   /**
-  * Request the data when the component mounts.
+  * Request the data when the component mounts and when the dataState changes after a data operation is executed.
   */
   useEffect(() => {
     Axios.get("http://localhost:4000/products", {
@@ -46,7 +46,7 @@ function App() {
       setTotal(response.data.total)
       setData([...parsedDataNew]);
     });
-  }, [])
+  }, [dataState])
 
   /**
   * Add a new empty item only to the local data.
@@ -154,35 +154,21 @@ function App() {
   }
 
   /**
-  * Make request to the server for data operations like paging, sorting, filtering and grouping.
+  * Update the dataState, this will execute the useEffect and make a request to the server for data operations.
   */
   const handleDataStateChange = (event) => {
-    Axios.get("http://localhost:4000/products", {
-      params: {
-        dataState: event.dataState
-      }
-    }).then((response) => {
-      let parseData = mapTree(response.data.data,'items', product => {
-        product.FirstOrderedOn = product.FirstOrderedOn !== null ? new Date(product.FirstOrderedOn) : null;
-        return product
-      })
       setDataState(event.dataState)
-      setTotal(response.data.total)
-      setData([...parseData]);
-    });
-
   }
   return (
     <div className="App">
-      <CellContext.Provider
+      <DataContext.Provider
         value={{
           enterEdit: enterEdit,
           remove: remove,
           add: add,
           discard: discard,
           update: update,
-          cancel: cancel,
-          editField: 'inEdit'
+          cancel: cancel
         }}
       >
         <Grid
@@ -225,7 +211,7 @@ function App() {
           <GridColumn field="Discontinued" title="Discontinued" editor="boolean" filter="boolean" />
           <GridColumn cell={MyCommandCell} width="200px" />
         </Grid>
-      </CellContext.Provider>
+      </DataContext.Provider>
     </div>
   );
 }

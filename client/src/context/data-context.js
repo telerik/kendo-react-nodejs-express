@@ -1,13 +1,12 @@
 import { createContext } from 'react';
 
-const CellContext = createContext({
+const DataContext = createContext({
     enterEdit: () => {},
     remove: () => {},
     add: () => {},
     discard: () => {},
     update: () => {},
-    cancel: () => {},
-    editFieldID: null
+    cancel: () => {}
 });
 
-export default CellContext;
+export default DataContext;
