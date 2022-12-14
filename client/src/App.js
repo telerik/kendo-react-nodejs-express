@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { mapTree } from "@progress/kendo-react-treelist";
 import { clone } from '@progress/kendo-react-common';
+import { Button } from "@progress/kendo-react-buttons";
 
 /**
 * Import a custom command cell responsible for rendering the Edit, Remove, Update and Cancel commands.
@@ -188,13 +189,13 @@ function App() {
         >
           <GridToolbar>
             <div>
-              <button
+              <Button
                 title="Add new"
                 className="k-button k-primary"
                 onClick={addRecord}
               >
                 Add new
-              </button>
+              </Button>
             </div>
           </GridToolbar>
           <GridColumn field="ProductID" title="Id" width="100px" editable={false} filterable={false} />
