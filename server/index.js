@@ -19,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/products", (req, res) => {
-    let dataState = JSON.parse(req.query.dataState);
+    let dataState = req.query.dataState;
     // this is the place to get the items from the database
     res.send(process(parsedData, dataState));
 });
@@ -39,12 +39,10 @@ app.put("/update", (req, res) => {
 app.post("/create", (req, res) => {
     const item = req.body.item
     let dataState = req.body.dataState;
-    const id = new Date().getMilliseconds() * 100;
-
+    const id = parsedData.length + 1;
     item.ProductID = id;
     item.inEdit = false;
     parsedData.unshift(item);
-
     res.send(process(parsedData, dataState)); 
   });
 
