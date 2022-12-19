@@ -27,7 +27,9 @@ app.get("/products", (req, res) => {
         {
             skip: skip,
             take: take,
-            group: dataState.group
+            group: dataState.group,
+            sort: dataState.sort,
+            filter: dataState.filter
         }
     ));
 });
