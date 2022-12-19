@@ -38,18 +38,18 @@ const MyCommandCell = props => {
     
     return inEdit ?
             (<td className="k-command-cell">
-                <Button className="k-button k-grid-save-command" onClick={handleAddUpdate}>
+                <Button onClick={handleAddUpdate}>
                     {isNewItem ? "Add" : "Update"}
                 </Button>
-                <Button className="k-button k-grid-cancel-command" onClick={handleDiscardCancel}>
+                <Button onClick={handleDiscardCancel}>
                     {isNewItem ? "Discard" : "Cancel"}
                 </Button>
             </td>) :   
             (<td className="k-command-cell">
-                <Button className="k-primary k-button k-grid-edit-command" onClick={handleEdit}>
+                <Button themeColor="primary" onClick={handleEdit}>
                     Edit
                 </Button>
-                <Button className="k-button k-grid-remove-command" onClick={handleDelete}>
+                <Button onClick={handleDelete}>
                     Remove
                 </Button>
             </td>);

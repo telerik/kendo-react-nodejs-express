@@ -191,7 +191,7 @@ function App() {
             <div>
               <Button
                 title="Add new"
-                className="k-button k-primary"
+                themeColor="primary"
                 onClick={addRecord}
               >
                 Add new
@@ -210,7 +210,7 @@ function App() {
             filter="numeric"
           />
           <GridColumn field="Discontinued" title="Discontinued" editor="boolean" filter="boolean" />
-          <GridColumn cell={MyCommandCell} width="200px" />
+          <GridColumn cell={MyCommandCell} width="200px" filterable={false} />
         </Grid>
       </DataContext.Provider>
     </div>
