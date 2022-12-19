@@ -9,10 +9,10 @@ const { process } = require('@progress/kendo-data-query');
 const currentYear = new Date().getFullYear();
 
 const parsedData = data.sampleProducts.map(product => {
-      const date = new Date(product.FirstOrderedOn);
-      date.setFullYear(currentYear);
-      product.FirstOrderedOn = date.toISOString()
-      return product;
+    const date = new Date(product.FirstOrderedOn);
+    date.setFullYear(currentYear);
+    product.FirstOrderedOn = date.toISOString()
+    return product;
 })
 
 app.use(cors());
@@ -21,7 +21,15 @@ app.use(express.json());
 app.get("/products", (req, res) => {
     let dataState = req.query.dataState;
     // this is the place to get the items from the database
-    res.send(process(parsedData, dataState));
+    let skip = parseInt(dataState.skip);
+    let take = parseInt(dataState.take);
+    res.send(process(parsedData,
+        {
+            skip: skip,
+            take: take,
+            group: dataState.group
+        }
+    ));
 });
 
 app.put("/update", (req, res) => {
@@ -43,8 +51,8 @@ app.post("/create", (req, res) => {
     item.ProductID = id;
     item.inEdit = false;
     parsedData.unshift(item);
-    res.send(process(parsedData, dataState)); 
-  });
+    res.send(process(parsedData, dataState));
+});
 
 app.delete("/delete/:id", (req, res) => {
     let dataState = req.body.dataState;
@@ -53,7 +61,7 @@ app.delete("/delete/:id", (req, res) => {
     let index = parsedData.findIndex(item => item.ProductID === id);
     parsedData.splice(index, 1);
     // return error if any
-    res.send(process(parsedData, dataState)); 
+    res.send(process(parsedData, dataState));
 });
 
 
