@@ -53,7 +53,7 @@ function App() {
   * Add a new empty item only to the local data.
   */
   const addRecord = () => {
-    let newRecord = { ProductID: undefined, FirstOrderedOn: null, Category: null, inEdit: true }
+    let newRecord = { ProductID: undefined, FirstOrderedOn: new Date(), Category: null, inEdit: true, Discontinued: false, UnitsInStock: 1, ProductName: null }
     let newData = [...data];
     newData.unshift(newRecord);
     setData(newData)
