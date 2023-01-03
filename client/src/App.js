@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Grid, GridColumn, GridToolbar } from '@progress/kendo-react-grid';
 import { mapTree } from "@progress/kendo-react-treelist";
 import { clone } from '@progress/kendo-react-common';
+import { Button } from "@progress/kendo-react-buttons";
 
 /**
 * Import a custom command cell responsible for rendering the Edit, Remove, Update and Cancel commands.
@@ -52,7 +53,7 @@ function App() {
   * Add a new empty item only to the local data.
   */
   const addRecord = () => {
-    let newRecord = { ProductID: undefined, FirstOrderedOn: null, Category: null, inEdit: true }
+    let newRecord = { ProductID: undefined, FirstOrderedOn: new Date(), Category: null, inEdit: true, Discontinued: false, UnitsInStock: 1, ProductName: null }
     let newData = [...data];
     newData.unshift(newRecord);
     setData(newData)
@@ -188,13 +189,13 @@ function App() {
         >
           <GridToolbar>
             <div>
-              <button
+              <Button
                 title="Add new"
-                className="k-button k-primary"
+                themeColor="primary"
                 onClick={addRecord}
               >
                 Add new
-              </button>
+              </Button>
             </div>
           </GridToolbar>
           <GridColumn field="ProductID" title="Id" width="100px" editable={false} filterable={false} />
@@ -209,7 +210,7 @@ function App() {
             filter="numeric"
           />
           <GridColumn field="Discontinued" title="Discontinued" editor="boolean" filter="boolean" />
-          <GridColumn cell={MyCommandCell} width="200px" />
+          <GridColumn cell={MyCommandCell} width="200px" filterable={false} />
         </Grid>
       </DataContext.Provider>
     </div>
